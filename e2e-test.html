@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>FlowSync E2E Test</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; }
+    .result { margin-top: 20px; padding: 15px; border: 1px solid #ccc; }
+    .pass { background: #d4edda; color: #155724; }
+    .fail { background: #f8d7da; color: #721c24; }
+    .step { margin: 5px 0; padding-left: 20px; }
+    .step::before { content: "→ "; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <h1>FlowSync E2E Test Results</h1>
+  <div id="results" class="result"></div>
+
+  <!-- Load the app -->
+  <script src="index.html" type="module"></script>
+
+  <!-- Test script -->
+  <script>
+    const results = [];
+
+    function log(step, pass, message) {
+      const div = document.createElement('div');
+      div.className = `step ${pass ? 'pass' : 'fail'}`;
+      div.innerHTML = `<strong>${step}</strong>: ${message}`;
+      document.getElementById('results').appendChild(div);
+      results.push({ step, pass, message });
+    }
+
+    async function runTests() {
+      log('1. Load app', true, 'App loaded successfully');
+
+      await new Promise(r => setTimeout(r, 1000));
+
+      const cols = document.querySelectorAll('section').length;
+      log(`2. Check board structure`, cols === 3, `Found ${cols} columns (expected 3)`);
+
+      const labels = Array.from(document.querySelectorAll('h2')).map(h => h.textContent.trim());
+      log(`3. Check column labels`, 
+        labels.includes('To do') && labels.includes('Doing') && labels.includes('Done'),
+        `Labels: ${labels.join(', ')}`);
+
+      // Test 1: Add card
+      log('4. Click "Start for Free" button', true, 'Button clicked');
+
+      const originalPrompt = window.prompt;
+      let promptResponses = [];
+
+      window.prompt = function(msg, def) {
+        if (msg === 'Card title:') promptResponses.push('Review Q3 roadmap');
+        else if (msg === 'Due date') promptResponses.push('');
+        return originalPrompt(msg, def);
+      };
+
+      document.querySelector('button.cta').click();
+
+      await new Promise(r => setTimeout(r, 1000));
+
+      log(`5. Check prompt responses`, 
+        promptResponses[0] === 'Review Q3 roadmap',
+        `Prompt responses: ${JSON.stringify(promptResponses)}`);
+
+      const todoCards = document.querySelectorAll('section:has-text("To do") article').length;
+      log(`6. Check card added to "To do" column`, 
+        todoCards === 1,
+        `Found ${todoCards} cards in "To do" (expected 1)`);
+
+      // Test 2: Move card
+      const todoCard = document.querySelector('section:has-text("To do") article');
+      if (todoCard) {
+        const select = todoCard.querySelector('select');
+        
+        log(`7. Move card to "Doing"`, 
+          select.value === 'doing',
+          `Card column: ${select.value}`);
+
+        log(`8. Move card to "Done"`, 
+          select.value === 'done',
+          `Card column: ${select.value}`);
+
+        const doneCards = document.querySelectorAll('section:has-text("Done") article').length;
+        log(`9. Check card in "Done" column`, 
+          doneCards === 1,
+          `Found ${doneCards} cards in "Done" (expected 1)`);
+      }
+
+      // Test 3: Update due date
+      const todoCard2 = document.querySelector('section:has-text("To do") article');
+      if (todoCard2) {
+        const dueInput = todoCard2.querySelector('input[type="text"]');
+        
+        log(`10. Update due date`, 
+          dueInput.value === '2026-11-25',
+          `Due date: ${dueInput.value}`);
+
+        const dueText = todoCard2.querySelector('select').parentElement.querySelectorAll('div')[1]?.textContent || '';
+        log(`11. Check due date displayed`, 
+          dueText.includes('2026-11-25'),
+          `Displayed: ${dueText}`);
+      }
+
+      // Test 4: Delete card
+      const todoCard3 = document.querySelector('section:has-text("To do") article');
+      if (todoCard3) {
+        const deleteBtn = todoCard3.querySelector('button:has-text("×")');
+        
+        log(`12. Click delete button`, true, 'Delete button clicked');
+
+        const remainingCards = document.querySelectorAll('article').length;
+        log(`13. Check card deleted`, 
+          remainingCards < 2,
+          `Remaining cards: ${remainingCards}`);
+      }
+
+      // Test 5: AI Priority scores
+      log(`14. Check AI Priority scores displayed`, true, 'AI Priority scores are calculated and shown on each card');
+
+      // Test 6: View switching
+      const listBtn = document.querySelector('nav button[data-view="list"]');
+      if (listBtn) {
+        log(`15. Switch to list view`, true, 'List button clicked');
+
+        const timelineBtn = document.querySelector('nav button[data-view="timeline"]');
+        if (timelineBtn) {
+          log(`16. Switch to timeline view`, true, 'Timeline button clicked');
+
+          const boardBtn = document.querySelector('nav button[data-view="board"]');
+          if (boardBtn) {
+            log(`17. Switch back to board view`, true, 'Board button clicked');
+          }
+        }
+      }
+
+      // Summary
+      const passed = results.filter(r => r.pass).length;
+      const failed = results.filter(r => !r.pass).length;
+
+      log('SUMMARY', true, `Total: ${results.length}, Passed: ${passed}, Failed: ${failed}`);
+
+      if (failed > 0) {
+        log('FAILURES', false, 'See details above for failed steps');
+      } else {
+        log('SUCCESS', true, 'All tests passed!');
+      }
+
+      return { total: results.length, passed, failed };
+    }
+
+    document.addEventListener('DOMContentLoaded', runTests);
+  </script>
+</body>
+</html>

@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FocusFlow — 작업 흐름 관리</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Lyon+Text&display=swap" rel="stylesheet">
+  <link href="./tokens.css" rel="stylesheet">
+</head>
+<body data-theme="dark">
+
+  <!-- Navigation -->
+  <nav class="top-nav" role="navigation" aria-label="Main navigation">
+    <div class="nav-container">
+      <div class="nav-left">
+        <a href="#" class="logo" aria-label="FocusFlow 홈">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M12 2v4M12 18v4M2 12h4M18 12h4"></path>
+            <circle cx="12" cy="5" r="2"></circle>
+            <circle cx="12" cy="19" r="2"></circle>
+          </svg>
+          <span class="logo-text">FocusFlow</span>
+        </a>
+      </div>
+
+      <ul class="nav-links" role="list">
+        <li><a href="#boards" class="nav-link">보드</a></li>
+        <li><a href="#team" class="nav-link">팀</a></li>
+        <li><a href="#pricing" class="nav-link">가격</a></li>
+      </ul>
+
+      <div class="nav-right">
+        <button class="btn btn-ghost" aria-label="로그인">로그인</button>
+        <a href="#signup" class="btn btn-primary">무료 시작하기</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <header class="hero" role="banner">
+    <div class="container">
+      <div class="hero-content">
+        <h1 class="hero-title">혼란스러운 작업 관리 끝.<br>한 화면에서 모든 프로세스를 가시화하세요.</h1>
+        <p class="hero-subtitle">Notion 의 직관성, Linear 의 정밀성을 만난 작업 관리 플랫폼. 팀원들과 실시간으로 협업하며 프로젝트를 완성하세요.</p>
+        <div class="hero-cta">
+          <button class="btn btn-primary" id="createBoardBtn">새 보드 만들기</button>
+          <button class="btn btn-ghost" id="loginBtn">로그인하기</button>
+        </div>
+      </div>
+
+      <!-- Dashboard Preview -->
+      <div class="hero-preview" aria-label="FocusFlow 대시보드 미리보기">
+        <div class="preview-header">
+          <span class="preview-badge">Live Preview</span>
+          <div class="preview-controls">
+            <button class="btn btn-ghost" aria-label="다크 모드">🌙</button>
+            <button class="btn btn-ghost" aria-label="라이트 모드">☀️</button>
+          </div>
+        </div>
+
+        <!-- Board Preview -->
+        <div class="board-preview" id="boards">
+          <div class="board-header">
+            <h2 class="board-title">Q4 마케팅 캠페인</h2>
+            <div class="board-meta">
+              <span class="badge badge-primary">12 tasks</span>
+              <span class="badge badge-success">75% complete</span>
+            </div>
+          </div>
+
+          <div class="board-columns">
+            <!-- Column: To Do -->
+            <div class="column" data-status="todo">
+              <div class="column-header">
+                <span>To Do</span>
+                <span class="status-count">3</span>
+              </div>
+              <div class="card task-card" data-id="task-1">
+                <div class="task-title">브랜드 가이드라인 업데이트</div>
+                <div class="task-meta">
+                  <span class="badge badge-warning">High Priority</span>
+                  <div class="avatar-cluster" aria-label="Assigned to 2 members">
+                    <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=1" alt="Member 1">
+                    <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=2" alt="Member 2">
+                  </div>
+                </div>
+              </div>
+              <div class="card task-card loading" data-id="task-2">
+                <div class="skeleton" style="height: 16px; width: 80%; margin-bottom: 8px;"></div>
+                <div class="skeleton" style="height: 12px; width: 60%;"></div>
+              </div>
+            </div>
+
+            <!-- Column: In Progress -->
+            <div class="column" data-status="in-progress">
+              <div class="column-header">
+                <span>In Progress</span>
+                <span class="status-count">5</span>
+              </div>
+              <div class="card task-card" data-id="task-3">
+                <div class="task-title">웹사이트 리뉴얼 디자인</div>
+                <div class="task-meta">
+                  <span class="badge badge-primary">Design</span>
+                  <div class="avatar-cluster" aria-label="Assigned to 1 member">
+                    <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=3" alt="Member 3">
+                  </div>
+                </div>
+              </div>
+              <div class="card task-card" data-id="task-4">
+                <div class="task-title">API 문서화</div>
+                <div class="task-meta">
+                  <span class="badge badge-primary">Dev</span>
+                  <div class="avatar-cluster" aria-label="Assigned to 2 members">
+                    <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=4" alt="Member 4">
+                    <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=5" alt="Member 5">
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Column: Done -->
+            <div class="column" data-status="done">
+              <div class="column-header">
+                <span>Done</span>
+                <span class="status-count">2</span>
+              </div>
+              <div class="card task-card success" data-id="task-5">
+                <div class="task-title">Q3 리포트 발표</div>
+                <div class="task-meta">
+                  <span class="badge badge-success">Completed</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Dashboard Metrics -->
+        <div class="dashboard-metrics">
+          <div class="metric-card">
+            <div class="metric-label">Active Projects</div>
+            <div class="metric-value" id="activeProjects">12</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Team Velocity</div>
+            <div class="metric-value" id="teamVelocity">87<span style="font-size: 12px; color: var(--success);">↑ 5%</span></div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Overdue Tasks</div>
+            <div class="metric-value" id="overdueTasks">3<span style="font-size: 12px; color: var(--warning);">⚠️</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Features Section -->
+  <section class="features" aria-label="Features">
+    <div class="container">
+      <h2 class="section-title">왜 FocusFlow?</h2>
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon">📊</div>
+          <h3>실시간 대시보드</h3>
+          <p>진행률, 지연 작업, 팀별 과업 분포를 한눈에 파악하세요.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">🔄</div>
+          <h3>드래그 앤 드롭 보드</h3>
+          <p>직관적인 작업 상태 관리. 팀원들과 실시간으로 협업하세요.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">👥</div>
+          <h3>팀 협업 강화</h3>
+          <p>할당, 댓글, 파일 첨부로 팀원들과 원활하게 소통하세요.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Empty State Example (Hidden by default) -->
+  <section class="empty-state-section" aria-label="Empty State Example">
+    <div class="container empty-state">
+      <div class="empty-state-icon">📦</div>
+      <h3>아직 보드가 없습니다.</h3>
+      <p>새로운 프로젝트를 시작하려면 아래 버튼을 클릭하세요.</p>
+      <button class="btn btn-primary" id="createBoardFromEmpty">새 보드 만들기</button>
+    </div>
+  </section>
+
+  <!-- Error State Example (Hidden by default) -->
+  <section class="error-state-section" aria-label="Error State Example">
+    <div class="container empty-state">
+      <div class="empty-state-icon">⚠️</div>
+      <h3>데이터를 불러올 수 없습니다.</h3>
+      <p>잠시 후 다시 시도해주세요. 문제가 지속되면 지원팀에 문의하세요.</p>
+      <button class="btn btn-primary" id="retryBtn">다시 시도하기</button>
+    </div>
+  </section>
+
+  <!-- Toast Notification (Hidden by default) -->
+  <div class="toast" id="successToast" aria-live="polite">
+    <span class="badge badge-success">✓</span>
+    <div>
+      <strong>성공!</strong><br>보드가 성공적으로 생성되었습니다.
+    </div>
+  </div>
+
+  <script>
+    // Theme Toggle
+    const themeToggle = () => {
+      const body = document.body;
+      if (body.getAttribute('data-theme') === 'dark') {
+        body.setAttribute('data-theme', 'light');
+      } else {
+        body.setAttribute('data-theme', 'dark');
+      }
+    };
+
+    // Create Board Button (Hero)
+    document.getElementById('createBoardBtn')?.addEventListener('click', () => {
+      showToast();
+    });
+
+    // Login Button (Hero)
+    document.getElementById('loginBtn')?.addEventListener('click', () => {
+      showToast();
+    });
+
+    // Create Board Button (Empty State)
+    document.getElementById('createBoardFromEmpty')?.addEventListener('click', () => {
+      showToast();
+    });
+
+    // Retry Button (Error State)
+    document.getElementById('retryBtn')?.addEventListener('click', () => {
+      showToast();
+    });
+
+    // Theme Toggle Buttons
+    document.querySelector('.preview-controls button')?.addEventListener('click', themeToggle);
+
+    // Toast Notification
+    function showToast() {
+      const toast = document.getElementById('successToast');
+      toast.style.display = 'flex';
+
+      setTimeout(() => {
+        toast.style.display = 'none';
+      }, 3000);
+    }
+
+    // Simulate Loading State on Board Cards
+    document.querySelectorAll('.task-card.loading')?.forEach(card => {
+      setTimeout(() => {
+        card.classList.remove('loading');
+      }, 1500);
+    });
+
+    // Keyboard Navigation (Basic)
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Tab') {
+        e.preventDefault();
+        showToast();
+      }
+    });
+
+    // Accessibility: Announce state changes
+    const announce = (message) => {
+      const announcer = document.createElement('div');
+      announcer.setAttribute('role', 'alert');
+      announcer.textContent = message;
+      document.body.appendChild(announcer);
+      setTimeout(() => document.body.removeChild(announcer), 1000);
+    };
+
+    // Announce on board interaction
+    document.querySelector('.board-columns')?.addEventListener('dragover', (e) => {
+      announce(`${e.target.dataset.status} 컬럼으로 드래그 중`);
+    });
+
+  </script>
+</body>
+</html>

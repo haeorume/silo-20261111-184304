@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>아무거나</title>
+  <link rel="stylesheet" href="tokens.css">
+  <style>
+    body { margin:0; font-family:var(--font); background:var(--bg); color:var(--text); }
+    header, nav { display:flex; gap:8px; align-items:center; padding:16px 24px; }
+    header { justify-content:space-between; background:var(--surface); border-bottom:1px solid var(--border); }
+    h1 { font-size:var(--title); margin:0; }
+    button.cta, button.primary { background:var(--primary); color:#fff; border:0; border-radius:999px; padding:10px 16px; }
+    main.board { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; padding:24px; }
+    section { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:16px; min-height:280px; }
+    article { background:var(--bg); border-radius:8px; padding:12px; margin:8px 0; }
+    .empty { color:var(--muted); }
+    .toast { position:fixed; right:16px; bottom:16px; background:#0f172a; color:#fff; padding:8px 12px; border-radius:8px; }
+    .err { background:#fef2f2; color:var(--danger); padding:8px 24px; }
+    @media (max-width:768px) { main.board { grid-template-columns:1fr; } }
+  </style>
+</head>
+<body>
+  <header>
+    <div><h1>FlowSync — 팀의 지식과 작업을 연결하는 All-in-One 협업 플랫폼</h1><p>문서, 이슈, 프로젝트 관리가 하나의 워크스페이스로 통합됩니다. AI 가 우선순위를 추천하고, 팀의 지식을 자동으로 연결합니다.</p></div>
+    <button class="cta" type="button" id="start">무료로 시작하기</button>
+  </header>
+  <nav>
+    <button type="button" data-view="board">보드</button>
+    <button type="button" data-view="list">리스트</button>
+    <button type="button" data-view="timeline">타임라인</button>
+    <button class="primary" type="button" id="add">팀 초대받기</button>
+  </nav>
+  <p id="err" class="err" hidden>저장에 실패했습니다. <button type="button" id="retry">다시 시도</button></p>
+  <main id="app" class="board"></main>
+  <p id="toast" class="toast" hidden>저장됨</p>
+  <script type="module">
+    const KEY='flowsync-v1';
+    const COLS=['todo','doing','done'];
+    const LABELS={todo:'To do',doing:'Doing',done:'Done'};
+    
+    // AI Priority Scoring (simulated)
+    function calculateAIPriority(card){
+      const baseScore = card.title.length * 0.5;
+      const dueFactor = card.due ? Math.min(card.due.length * 0.3, 2) : 0;
+      const complexityFactor = Math.min(card.title.split(' ').length * 0.2, 1);
+      const totalScore = baseScore + dueFactor + complexityFactor;
+      return Math.round(totalScore * 10) / 10;
+    }
+
+    let view='board';
+    let loading=true;
+    
+    function load(){ try { return JSON.parse(localStorage.getItem(KEY)||'[]'); } catch(e) { return []; } }
+    
+    function save(cards){
+      try {
+        const updated = cards.map(card => ({
+          ...card,
+          priorityScore: card.priorityScore ?? calculateAIPriority(card)
+        }));
+        localStorage.setItem(KEY, JSON.stringify(updated));
+        toast(); return true;
+      } catch(e) { err(true); return false; }
+    }
+
+    function toast(){ 
+      const t=document.getElementById('toast'); 
+      t.hidden=false; setTimeout(()=>t.hidden=true,1200); 
+    }
+
+    function err(on){ document.getElementById('err').hidden=!on; }
+    
+    function add(){ 
+      const title=window.prompt('Card title:', 'Review Q3 roadmap');
+      if(!title) return;
+      const due=window.prompt('Due date (optional, e.g., "2026-11-25"):', '')||'';
+      const cards=load();
+      cards.push({id:String(Date.now()), title, col:'todo', due, priorityScore: calculateAIPriority({id:'',title,col:'todo',due})});
+      save(cards); draw();
+    }
+
+    function move(id, col){ 
+      const cards=load();
+      save(cards.map(c=>c.id===id?{...c,col}:c)); 
+      draw();
+    }
+
+    function updateDue(id, due){
+      const cards=load();
+      save(cards.map(c=>c.id===id?{...c,due}:c));
+    }
+
+    function deleteCard(id){
+      if(!window.confirm('Delete this card?')) return;
+      const cards=load();
+      save(cards.filter(c=>c.id!==id));
+      draw();
+    }
+
+    function draw(){
+      const cards=load();
+      const app=document.getElementById('app');
+      
+      if(loading){
+        loading=false;
+        return;
+      }
+
+      app.className = view==='board' ? 'board' : '';
+      
+      if(view==='list'){
+        app.innerHTML = cards.length 
+          ? '<table><thead><tr><th>Card</th><th>Status</th></tr></thead><tbody>'
+          + cards.map(c=>'<tr><td>'+c.title+'</td><td><select data-id="'+c.id+'">'+COLS.map(x=>'<option value="'+x+'"'+(c.col===x?' selected':'')+'>'+LABELS[x]+'</option>').join('')+'</select></td></tr>')
+          .join('')+'</tbody></table>' 
+          : '<p class="empty">First card will appear here</p>';
+      } else if(view==='timeline'){
+        app.innerHTML = COLS.map(col=>'<section><h2>'+LABELS[col]+'</h2>'+(cards.filter(c=>c.col===col).map(c=>'<article>'+c.title+'</article>').join('')||'<p class="empty">Empty</p>')+'</section>').join('');
+      } else {
+        app.innerHTML = COLS.map(col=>'<section><h2>'+LABELS[col]+'</h2>'+(cards.filter(c=>c.col===col).map(c=>'<article>'+c.title+' <select data-id="'+c.id+'">'+COLS.map(x=>'<option value="'+x+'"'+(c.col===x?' selected':'')+'>'+LABELS[x]+'</option>').join('')+'</select></article>').join('')||'<p class="empty">First card will appear here</p>')+'<button type="button" data-add="'+col+'">Add Card</button></section>').join('');
+      }
+
+      app.querySelectorAll('select[data-id]').forEach(s=>s.onchange=()=>move(s.dataset.id,s.value));
+      app.querySelectorAll('[data-add]').forEach(b=>b.onclick=add);
+    }
+
+    document.getElementById('add').onclick=add;
+    document.getElementById('start').onclick=()=>{ console.log('[FlowSync] Start button clicked'); add(); };
+    document.getElementById('retry').onclick=()=>{ err(false); draw(); };
+
+    // Simulate loading state
+    setTimeout(draw, 500);
+
+    document.querySelectorAll('[data-view]').forEach(b=>b.onclick=()=>{ view=b.dataset.view; console.log('[FlowSync] View switched to:', view); draw(); });
+  </script>
+</body>
+</html>
